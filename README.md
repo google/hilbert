@@ -13,11 +13,13 @@ This is not an official Google product (experimental or otherwise), it is just c
 ## How to use
 
 Install:
+
 ```bash
 go get github.com/google/hilbert
 ```
 
 Example:
+
 ```go
 // Create a Hilbert Curve for mapping to and from a 16 by 16 space.
 s, err := New(16)
