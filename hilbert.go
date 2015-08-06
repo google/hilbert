@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package hilbert provides mapping of values to and from Hilbert Curves.
+// Package hilbert provides mapping of values to and from Hilbert curves.
 //
 // Converted from the code available on Wikipedia code, with additional help from:
 //  * https://en.wikipedia.org/wiki/Hilbert_curve
@@ -64,8 +64,8 @@ func b2i(b bool) int {
 	return 0
 }
 
-// Map transform one dimension values in the range [0, n^2-1] to coordinates on the Hilbert curve
-// in the two-dimension space, where X and Y is within [0,n-1].
+// Map transforms a dimension value, t, in the range [0, n^2-1] to coordinates on the Hilbert
+// curve in the two-dimension space, where x and y are within [0,n-1].
 func (s *Space) Map(t int) (x, y int, err error) {
 	if t < 0 || t >= s.N*s.N {
 		return -1, -1, ErrOutOfRange
