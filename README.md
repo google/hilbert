@@ -1,6 +1,6 @@
 # Hilbert
 
-Golang package for mapping values to and from a Hilbert Curve.
+Golang package for mapping values to and from a Hilbert curve.
 
 ![Image of 8 by 8 Hilbert curve](images/hilbert.png)
 
@@ -8,7 +8,9 @@ Converted from the code available on Wikipedia, with additional help from:
  * https://en.wikipedia.org/wiki/Hilbert_curve
  * http://bit-player.org/2013/mapping-the-hilbert-curve
 
-This is not an official Google product (experimental or otherwise), it is just code that happens to be owned by Google.
+[Documentation available here](https://godoc.org/github.com/google/hilbert)
+
+*This is not an official Google product (experimental or otherwise), it is just code that happens to be owned by Google.*
  
 ## How to use
 
@@ -21,8 +23,10 @@ go get github.com/google/hilbert
 Example:
 
 ```go
-// Create a Hilbert Curve for mapping to and from a 16 by 16 space.
-s, err := New(16)
+import "github.com/google/hilbert"
+	
+// Create a Hilbert curve for mapping to and from a 16 by 16 space.
+s, err := hilbert.New(16)
 
 // Now map one dimension numbers in the range [0, N*N-1], to an x,y
 // coordinate on the curve where both x and y are in the range [0, N-1].
