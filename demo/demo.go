@@ -12,12 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package main is a simple demo to show how to use the hilbert library
+// When ran, this demo will create two images, hilbert.png, and
+// hilbert_animation.gif.
+//
+// It is suggested you optimise/compress both images before uploading.
+//     optipng hilbert.png
+//     gifsicle -O -o hilbert_animation_compressed.gif hilbert_animation.gif
+//
 package main
 
 import (
-	"github.com/google/hilbert"
 	"fmt"
-	"github.com/llgcode/draw2d"
 	"go/build"
 	"image"
 	"image/color"
@@ -27,6 +33,9 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+
+	"github.com/google/hilbert"
+	"github.com/llgcode/draw2d"
 )
 
 // HilbertImage facilitates the drawing of a Hilbert Curve
