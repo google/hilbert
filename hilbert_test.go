@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package hilbert
+package hilbert_test
 
 import (
 	"testing"
+
+	"github.com/google/hilbert"
 )
 
 // Test cases when N=16
@@ -46,16 +48,16 @@ var newTestCases = []struct {
 	n           int
 	expectedErr error
 }{
-	{-1, ErrLessThanZero},
-	{0, ErrLessThanZero},
-	{3, ErrNotPowerOfTwo},
-	{5, ErrNotPowerOfTwo},
+	{-1, hilbert.ErrLessThanZero},
+	{0, hilbert.ErrLessThanZero},
+	{3, hilbert.ErrNotPowerOfTwo},
+	{5, hilbert.ErrNotPowerOfTwo},
 }
 
 func TestNewErrors(test *testing.T) {
 
 	for _, testCase := range newTestCases {
-		s, err := New(testCase.n)
+		s, err := hilbert.New(testCase.n)
 		if s != nil || err != testCase.expectedErr {
 			test.Errorf(
 				"New(%d) did not fail, expected '%s', got (%+v, %v)",
@@ -65,7 +67,7 @@ func TestNewErrors(test *testing.T) {
 }
 
 func TestSmallMap(test *testing.T) {
-	s, err := New(1)
+	s, err := hilbert.New(1)
 	if err != nil {
 		test.Fatalf("Failed to create hibert space: %s", err)
 	}
@@ -86,7 +88,7 @@ func TestSmallMap(test *testing.T) {
 }
 
 func TestMap(test *testing.T) {
-	s, err := New(16)
+	s, err := hilbert.New(16)
 	if err != nil {
 		test.Fatalf("Failed to create hibert space: %s", err)
 	}
@@ -105,7 +107,7 @@ func TestMap(test *testing.T) {
 }
 
 func TestMapInverse(test *testing.T) {
-	s, err := New(16)
+	s, err := hilbert.New(16)
 	if err != nil {
 		test.Fatalf("Failed to create hibert space: %s", err)
 	}
@@ -124,7 +126,7 @@ func TestMapInverse(test *testing.T) {
 }
 
 func TestAllMapValues(test *testing.T) {
-	s, err := New(16)
+	s, err := hilbert.New(16)
 	if err != nil {
 		test.Fatalf("Failed to create hibert space: %s", err)
 	}
