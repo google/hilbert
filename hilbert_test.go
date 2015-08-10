@@ -18,7 +18,10 @@ import (
 	"testing"
 
 	"github.com/google/hilbert"
+	"math/rand"
 )
+
+const benchmarkN = 32
 
 // Test cases when N=16
 var testCases = []struct {
@@ -154,5 +157,45 @@ func TestAllMapValues(test *testing.T) {
 				t, x, y, tPrime)
 		}
 
+	}
+}
+
+func BenchmarkMap(benchmark *testing.B) {
+	for i := 0; i < benchmark.N; i++ {
+		s, err := hilbert.New(benchmarkN)
+		if err != nil {
+			benchmark.Fatalf("Failed to create hibert space: %s", err)
+		}
+		for t := 0; t < benchmarkN*benchmarkN; t++ {
+			s.Map(t)
+		}
+	}
+}
+
+func BenchmarkMapRandom(benchmark *testing.B) {
+	for i := 0; i < benchmark.N; i++ {
+		s, err := hilbert.New(benchmarkN)
+		if err != nil {
+			benchmark.Fatalf("Failed to create hibert space: %s", err)
+		}
+		for t := 0; t < benchmarkN*benchmarkN; t++ {
+			rt := rand.Intn(benchmarkN * benchmarkN) // Pick a random t
+			s.Map(rt)
+		}
+	}
+}
+
+func BenchmarkMapInverse(benchmark *testing.B) {
+	for i := 0; i < benchmark.N; i++ {
+		s, err := hilbert.New(benchmarkN)
+		if err != nil {
+			benchmark.Fatalf("Failed to create hibert space: %s", err)
+		}
+
+		for x := 0; x < benchmarkN; x++ {
+			for y := 0; y < benchmarkN; y++ {
+				s.MapInverse(x, y)
+			}
+		}
 	}
 }
