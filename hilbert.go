@@ -53,10 +53,6 @@ func New(n int) (*Space, error) {
 	}, nil
 }
 
-func i2b(i int) bool {
-	return i != 0
-}
-
 func b2i(b bool) int {
 	if b {
 		return 1
@@ -75,12 +71,21 @@ func (s *Space) Map(t int) (x, y int, err error) {
 	y = 0
 
 	for i := 1; i < s.N; i = i * 2 {
-		rx := i2b(1 & (t / 2)) // TODO make more go'ish
-		ry := i2b(1 & (t ^ b2i(rx)))
+		rx := t&2 == 2
+		ry := t&1 == 1
+		if rx {
+			ry = !ry
+		}
+
 		x, y = rot(i, x, y, rx, ry)
 
-		x = x + i*b2i(rx)
-		y = y + i*b2i(ry)
+		if rx {
+			x = x + i
+		}
+		if ry {
+			y = y + i
+		}
+
 		t /= 4
 	}
 
@@ -97,7 +102,13 @@ func (s *Space) MapInverse(x, y int) (t int, err error) {
 	for i := s.N / 2; i > 0; i = i / 2 {
 		rx := (x & i) > 0
 		ry := (y & i) > 0
-		t += i * i * ((3 * b2i(rx)) ^ b2i(ry))
+
+		a := 0
+		if rx {
+			a = 3
+		}
+		t += i * i * (a ^ b2i(ry))
+
 		x, y = rot(i, x, y, rx, ry)
 	}
 
@@ -112,7 +123,6 @@ func rot(n, x, y int, rx, ry bool) (int, int) {
 			y = n - 1 - y
 		}
 
-		//Swap x and y
 		x, y = y, x
 	}
 	return x, y
