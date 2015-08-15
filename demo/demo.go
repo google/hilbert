@@ -82,12 +82,13 @@ func (h *HilbertImage) drawText(gc *draw2d.ImageGraphicContext, px1, py1 float64
 	gc.FillStringAt(text, px1+h.TextMargin, py1-top+h.TextMargin)
 }
 
-func (h *HilbertImage) drawLine(gc *draw2d.ImageGraphicContext, px1, py1, px2, py2 float64) {
+func (h *HilbertImage) drawSnake(gc *draw2d.ImageGraphicContext, snake *draw2d.PathStorage) {
 	gc.SetStrokeColor(h.SnakeColor)
-	gc.SetLineWidth(3)
-	gc.MoveTo(px1, py1)
-	gc.LineTo(px2, py2)
-	gc.Stroke()
+	gc.SetLineCap(draw2d.SquareCap)
+	gc.SetLineJoin(draw2d.MiterJoin)
+	gc.SetLineWidth(2)
+
+	gc.Stroke(snake)
 }
 
 // CreateHilbertImage returns a new hilbertImage ready for drawing.
@@ -121,9 +122,8 @@ func (h *HilbertImage) Draw() (draw.Image, error) {
 	}
 
 	gc := draw2d.NewGraphicContext(img)
-	gc.Save()
+	snake := draw2d.NewPathStorage()
 
-	var lastX, lastY float64 = -1, -1
 	for t := 0; t < h.N*h.N; t++ {
 
 		// Map the 1D number into the 2D space
@@ -135,18 +135,22 @@ func (h *HilbertImage) Draw() (draw.Image, error) {
 		px1, py1 := h.toPixel(x, y)
 		px2, py2 := h.toPixel(x+1, y+1)
 
+		// Draw the grid for t
 		h.drawRectange(gc, px1, py1, px2, py2)
 		h.drawText(gc, px1, py1, t)
 
+		// Move the snake along
 		centerX, centerY := px1+h.SquareSize/2, py1+h.SquareSize/2
-		if lastX != -1 && lastY != -1 {
-			h.drawLine(gc, lastX, lastY, centerX, centerY)
+		if t == 0 {
+			snake.MoveTo(centerX, centerY);
+		} else {
+			snake.LineTo(centerX, centerY)
 		}
-
-		lastX, lastY = centerX, centerY
 	}
 
-	gc.Restore()
+	// Draw the snake at the end, to form one continuous line.
+	h.drawSnake(gc, snake);
+
 	return img, nil
 }
 
