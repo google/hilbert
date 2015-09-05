@@ -35,7 +35,7 @@ import (
 	"strconv"
 
 	"github.com/google/hilbert"
-	"github.com/llgcode/draw2d"
+	draw2d "gopkg.in/llgcode/draw2d.v1"
 )
 
 // HilbertImage facilitates the drawing of a Hilbert Curve
