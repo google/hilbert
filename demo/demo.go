@@ -35,7 +35,9 @@ import (
 	"strconv"
 
 	"github.com/google/hilbert"
-	draw2d "gopkg.in/llgcode/draw2d.v1"
+	"github.com/llgcode/draw2d"
+	"github.com/llgcode/draw2d/draw2dimg"
+	"github.com/llgcode/draw2d/draw2dkit"
 )
 
 // HilbertImage facilitates the drawing of a Hilbert Curve
@@ -61,16 +63,16 @@ func (h *HilbertImage) createImage() (draw.Image, error) {
 	return image.NewRGBA(image.Rect(0, 0, int(width), int(height))), nil
 }
 
-func (h *HilbertImage) drawRectange(gc *draw2d.ImageGraphicContext, px1, py1, px2, py2 float64) {
+func (h *HilbertImage) drawRectange(gc draw2d.GraphicContext, px1, py1, px2, py2 float64) {
 	gc.SetFillColor(h.BackgroundColor)
 	gc.SetStrokeColor(h.GridColor)
 	gc.SetLineWidth(1)
 
-	draw2d.Rect(gc, px1, py1, px2, py2)
+	draw2dkit.Rectangle(gc, px1, py1, px2, py2)
 	gc.FillStroke()
 }
 
-func (h *HilbertImage) drawText(gc *draw2d.ImageGraphicContext, px1, py1 float64, t int) {
+func (h *HilbertImage) drawText(gc draw2d.GraphicContext, px1, py1 float64, t int) {
 	if !h.DrawText {
 		return
 	}
@@ -82,7 +84,7 @@ func (h *HilbertImage) drawText(gc *draw2d.ImageGraphicContext, px1, py1 float64
 	gc.FillStringAt(text, px1+h.TextMargin, py1-top+h.TextMargin)
 }
 
-func (h *HilbertImage) drawSnake(gc *draw2d.ImageGraphicContext, snake *draw2d.PathStorage) {
+func (h *HilbertImage) drawSnake(gc draw2d.GraphicContext, snake *draw2d.Path) {
 	gc.SetStrokeColor(h.SnakeColor)
 	gc.SetLineCap(draw2d.SquareCap)
 	gc.SetLineJoin(draw2d.MiterJoin)
@@ -121,8 +123,8 @@ func (h *HilbertImage) Draw() (draw.Image, error) {
 		return nil, err
 	}
 
-	gc := draw2d.NewGraphicContext(img)
-	snake := draw2d.NewPathStorage()
+	gc := draw2dimg.NewGraphicContext(img)
+	snake := &draw2d.Path{}
 
 	for t := 0; t < h.N*h.N; t++ {
 
@@ -216,7 +218,7 @@ func mainDrawOne() error {
 	if err != nil {
 		return err
 	}
-	return draw2d.SaveToPngFile("hilbert.png", img)
+	return draw2dimg.SaveToPngFile("hilbert.png", img)
 }
 
 func mainDrawAnimation() error {
