@@ -23,7 +23,17 @@ import (
 
 const benchmarkN = 32
 
-// Test cases when N=16
+var newTestCases = []struct {
+	n           int
+	expectedErr error
+}{
+	{-1, hilbert.ErrLessThanZero},
+	{0, hilbert.ErrLessThanZero},
+	{3, hilbert.ErrNotPowerOfTwo},
+	{5, hilbert.ErrNotPowerOfTwo},
+}
+
+// Test cases below assume N=16
 var testCases = []struct {
 	t, x, y int
 }{
@@ -47,14 +57,25 @@ var testCases = []struct {
 	{255, 15, 0},
 }
 
-var newTestCases = []struct {
-	n           int
+var mapRangeTestCases = []struct {
+	t           int
 	expectedErr error
 }{
-	{-1, hilbert.ErrLessThanZero},
-	{0, hilbert.ErrLessThanZero},
-	{3, hilbert.ErrNotPowerOfTwo},
-	{5, hilbert.ErrNotPowerOfTwo},
+	{0, nil},
+	{-1, hilbert.ErrOutOfRange},
+	{256, hilbert.ErrOutOfRange},
+}
+
+var mapInverseRangeTestCases = []struct {
+	x           int
+	y           int
+	expectedErr error
+}{
+	{0, 0, nil},
+	{-1, 0, hilbert.ErrOutOfRange},
+	{0, -1, hilbert.ErrOutOfRange},
+	{16, 0, hilbert.ErrOutOfRange},
+	{0, 16, hilbert.ErrOutOfRange},
 }
 
 func TestNewErrors(test *testing.T) {
@@ -65,6 +86,40 @@ func TestNewErrors(test *testing.T) {
 			test.Errorf(
 				"New(%d) did not fail, expected '%s', got (%+v, %v)",
 				testCase.n, testCase.expectedErr, s, err)
+		}
+	}
+}
+
+func TestMapRangeErrors(test *testing.T) {
+
+	s, err := hilbert.New(16)
+	if err != nil {
+		test.Fatalf("Failed to create hibert space: %s", err)
+	}
+
+	for _, testCase := range mapRangeTestCases {
+		_, _, err = s.Map(testCase.t)
+		if err != testCase.expectedErr {
+			test.Errorf(
+				"Map(%d) did not fail, expected '%s', got '%s'",
+				testCase.t, testCase.expectedErr, err)
+		}
+	}
+}
+
+func TestMapInverseRangeErrors(test *testing.T) {
+
+	s, err := hilbert.New(16)
+	if err != nil {
+		test.Fatalf("Failed to create hibert space: %s", err)
+	}
+
+	for _, testCase := range mapInverseRangeTestCases {
+		_, err = s.MapInverse(testCase.x, testCase.y)
+		if err != testCase.expectedErr {
+			test.Errorf(
+				"MapInverse(%d, %d) did not fail, expected '%s', got '%s'",
+				testCase.x, testCase.y, testCase.expectedErr, err)
 		}
 	}
 }
