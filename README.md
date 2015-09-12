@@ -1,4 +1,5 @@
-# Hilbert [![Build Status](https://travis-ci.org/google/hilbert.svg?branch=master)](https://travis-ci.org/google/hilbert)
+# Hilbert [![Build Status](https://travis-ci.org/google/hilbert.svg?branch=master)](https://travis-ci.org/google/hilbert) [![Coverage](http://gocover.io/_badge/github.com/google/hilbert?0)](http://gocover.io/github.com/google/hilbert)
+
 
 Golang package for mapping values to and from a Hilbert curve.
 
