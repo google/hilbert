@@ -26,7 +26,7 @@ import (
 
 // Errors returned when validating input.
 var (
-	ErrLessThanZero  = errors.New("N must be greater than zero")
+	ErrNotPositive   = errors.New("N must be greater than zero")
 	ErrNotPowerOfTwo = errors.New("N must be a power of two")
 	ErrOutOfRange    = errors.New("Value is out of range")
 )
@@ -40,7 +40,7 @@ type Space struct {
 // n must be a power of two.
 func New(n int) (*Space, error) {
 	if n <= 0 {
-		return nil, ErrLessThanZero
+		return nil, ErrNotPositive
 	}
 
 	// Test if power of two
@@ -66,9 +66,6 @@ func (s *Space) Map(t int) (x, y int, err error) {
 	if t < 0 || t >= s.N*s.N {
 		return -1, -1, ErrOutOfRange
 	}
-
-	x = 0
-	y = 0
 
 	for i := 1; i < s.N; i = i * 2 {
 		rx := t&2 == 2
@@ -98,7 +95,6 @@ func (s *Space) MapInverse(x, y int) (t int, err error) {
 		return -1, ErrOutOfRange
 	}
 
-	t = 0
 	for i := s.N / 2; i > 0; i = i / 2 {
 		rx := (x & i) > 0
 		ry := (y & i) > 0
