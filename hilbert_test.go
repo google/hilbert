@@ -49,8 +49,8 @@ var testCases = []struct {
 
 func TestNewErrors(test *testing.T) {
 	var newTestCases = []struct {
-		n           int
-		expectedErr error
+		n       int
+		wantErr error
 	}{
 		{-1, hilbert.ErrNotPositive},
 		{0, hilbert.ErrNotPositive},
@@ -58,20 +58,18 @@ func TestNewErrors(test *testing.T) {
 		{5, hilbert.ErrNotPowerOfTwo},
 	}
 
-	for _, testCase := range newTestCases {
-		s, err := hilbert.New(testCase.n)
-		if s != nil || err != testCase.expectedErr {
-			test.Errorf(
-				"New(%d) did not fail, expected %q, got (%+v, %q)",
-				testCase.n, testCase.expectedErr, s, err)
+	for _, tc := range newTestCases {
+		s, err := hilbert.New(tc.n)
+		if s != nil || err != tc.wantErr {
+			test.Errorf("New(%d) did not fail, want %q, got (%+v, %q)", tc.n, tc.wantErr, s, err)
 		}
 	}
 }
 
 func TestMapRangeErrors(test *testing.T) {
 	var mapRangeTestCases = []struct {
-		t           int
-		expectedErr error
+		t       int
+		wantErr error
 	}{
 		{0, nil},
 		{-1, hilbert.ErrOutOfRange},
@@ -83,19 +81,17 @@ func TestMapRangeErrors(test *testing.T) {
 		test.Fatalf("Failed to create hibert space: %s", err)
 	}
 
-	for _, testCase := range mapRangeTestCases {
-		if _, _, err = s.Map(testCase.t); err != testCase.expectedErr {
-			test.Errorf(
-				"Map(%d) did not fail, expected %q, got %q",
-				testCase.t, testCase.expectedErr, err)
+	for _, tc := range mapRangeTestCases {
+		if _, _, err = s.Map(tc.t); err != tc.wantErr {
+			test.Errorf("Map(%d) did not fail, want %q, got %q", tc.t, tc.wantErr, err)
 		}
 	}
 }
 
 func TestMapInverseRangeErrors(test *testing.T) {
 	var mapInverseRangeTestCases = []struct {
-		x, y        int
-		expectedErr error
+		x, y    int
+		wantErr error
 	}{
 		{0, 0, nil},
 		{-1, 0, hilbert.ErrOutOfRange},
@@ -109,11 +105,9 @@ func TestMapInverseRangeErrors(test *testing.T) {
 		test.Fatalf("Failed to create hibert space: %s", err)
 	}
 
-	for _, testCase := range mapInverseRangeTestCases {
-		if _, err = s.MapInverse(testCase.x, testCase.y); err != testCase.expectedErr {
-			test.Errorf(
-				"MapInverse(%d, %d) did not fail, expected %q, got %q",
-				testCase.x, testCase.y, testCase.expectedErr, err)
+	for _, tc := range mapInverseRangeTestCases {
+		if _, err = s.MapInverse(tc.x, tc.y); err != tc.wantErr {
+			test.Errorf("MapInverse(%d, %d) did not fail, want %q, got %q", tc.x, tc.y, tc.wantErr, err)
 		}
 	}
 }
@@ -129,7 +123,7 @@ func TestSmallMap(test *testing.T) {
 		test.Errorf("Map(0) returned error: %s", err)
 	}
 	if x != 0 || y != 0 {
-		test.Errorf("Map(0) failed, expected (0, 0), got (%d, %d)", x, y)
+		test.Errorf("Map(0) failed, want (0, 0), got (%d, %d)", x, y)
 	}
 
 	t, err := s.MapInverse(0, 0)
@@ -137,7 +131,7 @@ func TestSmallMap(test *testing.T) {
 		test.Errorf("MapInverse(0,0) returned error: %s", err)
 	}
 	if t != 0 {
-		test.Errorf("MapInverse(0, 0) failed, expected 0, got %d", t)
+		test.Errorf("MapInverse(0, 0) failed, want 0, got %d", t)
 	}
 }
 
@@ -147,15 +141,15 @@ func TestMap(test *testing.T) {
 		test.Fatalf("Failed to create hibert space: %s", err)
 	}
 
-	for _, testCase := range testCases {
-		x, y, err := s.Map(testCase.t)
+	for _, tc := range testCases {
+		x, y, err := s.Map(tc.t)
 		if err != nil {
-			test.Errorf("Map(%d) returned error: %s", testCase.t, err)
+			test.Errorf("Map(%d) returned error: %s", tc.t, err)
 		}
-		if x != testCase.x || y != testCase.y {
+		if x != tc.x || y != tc.y {
 			test.Errorf(
-				"Map(%d) failed, expected (%d, %d), got (%d, %d)",
-				testCase.t, testCase.x, testCase.y, x, y)
+				"Map(%d) failed, want (%d, %d), got (%d, %d)",
+				tc.t, tc.x, tc.y, x, y)
 		}
 	}
 }
@@ -166,15 +160,13 @@ func TestMapInverse(test *testing.T) {
 		test.Fatalf("Failed to create hibert space: %s", err)
 	}
 
-	for _, testCase := range testCases {
-		t, err := s.MapInverse(testCase.x, testCase.y)
+	for _, tc := range testCases {
+		t, err := s.MapInverse(tc.x, tc.y)
 		if err != nil {
-			test.Errorf("MapInverse(%d, %d) returned error: %s", testCase.x, testCase.y, err)
+			test.Errorf("MapInverse(%d, %d) returned error: %s", tc.x, tc.y, err)
 		}
-		if t != testCase.t {
-			test.Errorf(
-				"MapInverse(%d, %d) failed, expected %d, got %d",
-				testCase.x, testCase.y, testCase.t, t)
+		if t != tc.t {
+			test.Errorf("MapInverse(%d, %d) failed, want %d, got %d", tc.x, tc.y, tc.t, t)
 		}
 	}
 }
@@ -192,9 +184,7 @@ func TestAllMapValues(test *testing.T) {
 			test.Errorf("Map(%d) returned error: %s", t, err)
 		}
 		if x < 0 || x >= s.N || y < 0 || y >= s.N {
-			test.Errorf(
-				"Map(%d) returned x,y out of range: (%d, %d)",
-				t, x, y)
+			test.Errorf("Map(%d) returned x,y out of range: (%d, %d)", t, x, y)
 		}
 
 		tPrime, err := s.MapInverse(x, y)
@@ -202,9 +192,7 @@ func TestAllMapValues(test *testing.T) {
 			test.Errorf("MapInverse(%d, %d) returned error: %s", x, y, err)
 		}
 		if t != tPrime {
-			test.Errorf(
-				"Failed Map(%d) -> MapInverse(%d, %d) -> %d",
-				t, x, y, tPrime)
+			test.Errorf("Failed Map(%d) -> MapInverse(%d, %d) -> %d", t, x, y, tPrime)
 		}
 	}
 }
