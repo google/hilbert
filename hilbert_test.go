@@ -25,7 +25,7 @@ const benchmarkN = 32
 
 // Test cases below assume N=16
 var testCases = []struct {
-	t, x, y int
+	d, x, y int
 }{
 	{0, 0, 0},
 	{16, 4, 0},
@@ -47,7 +47,7 @@ var testCases = []struct {
 	{255, 15, 0},
 }
 
-func TestNewErrors(test *testing.T) {
+func TestNewErrors(t *testing.T) {
 	var newTestCases = []struct {
 		n       int
 		wantErr error
@@ -61,39 +61,41 @@ func TestNewErrors(test *testing.T) {
 	for _, tc := range newTestCases {
 		s, err := hilbert.New(tc.n)
 		if s != nil || err != tc.wantErr {
-			test.Errorf("New(%d) did not fail, want %q, got (%+v, %q)", tc.n, tc.wantErr, s, err)
+			t.Errorf("New(%d) did not fail, want %q, got (%+v, %q)", tc.n, tc.wantErr, s, err)
 		}
 	}
 }
 
-func TestMapRangeErrors(test *testing.T) {
+func TestMapRangeErrors(t *testing.T) {
 	var mapRangeTestCases = []struct {
-		t       int
+		d       int
 		wantErr error
 	}{
-		{0, nil},
 		{-1, hilbert.ErrOutOfRange},
+		{0, nil},
+		{255, nil},
 		{256, hilbert.ErrOutOfRange},
 	}
 
 	s, err := hilbert.New(16)
 	if err != nil {
-		test.Fatalf("Failed to create hibert space: %s", err)
+		t.Fatalf("Failed to create hibert space: %s", err)
 	}
 
 	for _, tc := range mapRangeTestCases {
-		if _, _, err = s.Map(tc.t); err != tc.wantErr {
-			test.Errorf("Map(%d) did not fail, want %q, got %q", tc.t, tc.wantErr, err)
+		if _, _, err = s.Map(tc.d); err != tc.wantErr {
+			t.Errorf("Map(%d) did not fail, want %q, got %q", tc.d, tc.wantErr, err)
 		}
 	}
 }
 
-func TestMapInverseRangeErrors(test *testing.T) {
+func TestMapInverseRangeErrors(t *testing.T) {
 	var mapInverseRangeTestCases = []struct {
 		x, y    int
 		wantErr error
 	}{
 		{0, 0, nil},
+		{15, 15, nil},
 		{-1, 0, hilbert.ErrOutOfRange},
 		{0, -1, hilbert.ErrOutOfRange},
 		{16, 0, hilbert.ErrOutOfRange},
@@ -102,131 +104,129 @@ func TestMapInverseRangeErrors(test *testing.T) {
 
 	s, err := hilbert.New(16)
 	if err != nil {
-		test.Fatalf("Failed to create hibert space: %s", err)
+		t.Fatalf("Failed to create hibert space: %s", err)
 	}
 
 	for _, tc := range mapInverseRangeTestCases {
 		if _, err = s.MapInverse(tc.x, tc.y); err != tc.wantErr {
-			test.Errorf("MapInverse(%d, %d) did not fail, want %q, got %q", tc.x, tc.y, tc.wantErr, err)
+			t.Errorf("MapInverse(%d, %d) did not fail, want %q, got %q", tc.x, tc.y, tc.wantErr, err)
 		}
 	}
 }
 
-func TestSmallMap(test *testing.T) {
+func TestSmallMap(t *testing.T) {
 	s, err := hilbert.New(1)
 	if err != nil {
-		test.Fatalf("Failed to create hibert space: %s", err)
+		t.Fatalf("Failed to create hibert space: %s", err)
 	}
 
 	x, y, err := s.Map(0)
 	if err != nil {
-		test.Errorf("Map(0) returned error: %s", err)
+		t.Errorf("Map(0) returned error: %s", err)
 	}
 	if x != 0 || y != 0 {
-		test.Errorf("Map(0) failed, want (0, 0), got (%d, %d)", x, y)
+		t.Errorf("Map(0) failed, want (0, 0), got (%d, %d)", x, y)
 	}
 
-	t, err := s.MapInverse(0, 0)
+	d, err := s.MapInverse(0, 0)
 	if err != nil {
-		test.Errorf("MapInverse(0,0) returned error: %s", err)
+		t.Errorf("MapInverse(0,0) returned error: %s", err)
 	}
-	if t != 0 {
-		test.Errorf("MapInverse(0, 0) failed, want 0, got %d", t)
+	if d != 0 {
+		t.Errorf("MapInverse(0, 0) failed, want 0, got %d", d)
 	}
 }
 
-func TestMap(test *testing.T) {
+func TestMap(t *testing.T) {
 	s, err := hilbert.New(16)
 	if err != nil {
-		test.Fatalf("Failed to create hibert space: %s", err)
+		t.Fatalf("Failed to create hibert space: %s", err)
 	}
 
 	for _, tc := range testCases {
-		x, y, err := s.Map(tc.t)
+		x, y, err := s.Map(tc.d)
 		if err != nil {
-			test.Errorf("Map(%d) returned error: %s", tc.t, err)
+			t.Errorf("Map(%d) returned error: %s", tc.d, err)
 		}
 		if x != tc.x || y != tc.y {
-			test.Errorf(
-				"Map(%d) failed, want (%d, %d), got (%d, %d)",
-				tc.t, tc.x, tc.y, x, y)
+			t.Errorf("Map(%d) failed, want (%d, %d), got (%d, %d)", tc.d, tc.x, tc.y, x, y)
 		}
 	}
 }
 
-func TestMapInverse(test *testing.T) {
+func TestMapInverse(t *testing.T) {
 	s, err := hilbert.New(16)
 	if err != nil {
-		test.Fatalf("Failed to create hibert space: %s", err)
+		t.Fatalf("Failed to create hibert space: %s", err)
 	}
 
 	for _, tc := range testCases {
-		t, err := s.MapInverse(tc.x, tc.y)
+		d, err := s.MapInverse(tc.x, tc.y)
 		if err != nil {
-			test.Errorf("MapInverse(%d, %d) returned error: %s", tc.x, tc.y, err)
+			t.Errorf("MapInverse(%d, %d) returned error: %s", tc.x, tc.y, err)
 		}
-		if t != tc.t {
-			test.Errorf("MapInverse(%d, %d) failed, want %d, got %d", tc.x, tc.y, tc.t, t)
+		if d != tc.d {
+			t.Errorf("MapInverse(%d, %d) failed, want %d, got %d", tc.x, tc.y, tc.d, d)
 		}
 	}
 }
 
-func TestAllMapValues(test *testing.T) {
+func TestAllMapValues(t *testing.T) {
 	s, err := hilbert.New(16)
 	if err != nil {
-		test.Fatalf("Failed to create hibert space: %s", err)
+		t.Fatalf("Failed to create hibert space: %s", err)
 	}
 
-	for t := 0; t < s.N*s.N; t++ {
+	for d := 0; d < s.N*s.N; d++ {
 		// Map forwards and then back
-		x, y, err := s.Map(t)
+		x, y, err := s.Map(d)
 		if err != nil {
-			test.Errorf("Map(%d) returned error: %s", t, err)
+			t.Errorf("Map(%d) returned error: %s", d, err)
 		}
 		if x < 0 || x >= s.N || y < 0 || y >= s.N {
-			test.Errorf("Map(%d) returned x,y out of range: (%d, %d)", t, x, y)
+			t.Errorf("Map(%d) returned x,y out of range: (%d, %d)", d, x, y)
 		}
 
-		tPrime, err := s.MapInverse(x, y)
+		dPrime, err := s.MapInverse(x, y)
 		if err != nil {
-			test.Errorf("MapInverse(%d, %d) returned error: %s", x, y, err)
+			t.Errorf("MapInverse(%d, %d) returned error: %s", x, y, err)
 		}
-		if t != tPrime {
-			test.Errorf("Failed Map(%d) -> MapInverse(%d, %d) -> %d", t, x, y, tPrime)
+		if d != dPrime {
+			t.Errorf("Failed Map(%d) -> MapInverse(%d, %d) -> %d", d, x, y, dPrime)
 		}
 	}
 }
 
-func BenchmarkMap(benchmark *testing.B) {
-	for i := 0; i < benchmark.N; i++ {
+func BenchmarkMap(b *testing.B) {
+	for i := 0; i < b.N; i++ {
 		s, err := hilbert.New(benchmarkN)
 		if err != nil {
-			benchmark.Fatalf("Failed to create hibert space: %s", err)
+			b.Fatalf("Failed to create hibert space: %s", err)
 		}
-		for t := 0; t < benchmarkN*benchmarkN; t++ {
-			s.Map(t)
+		for d := 0; d < benchmarkN*benchmarkN; d++ {
+			s.Map(d)
 		}
 	}
 }
 
-func BenchmarkMapRandom(benchmark *testing.B) {
-	for i := 0; i < benchmark.N; i++ {
+func BenchmarkMapRandom(b *testing.B) {
+	for i := 0; i < b.N; i++ {
 		s, err := hilbert.New(benchmarkN)
 		if err != nil {
-			benchmark.Fatalf("Failed to create hibert space: %s", err)
+			b.Fatalf("Failed to create hibert space: %s", err)
 		}
-		for t := 0; t < benchmarkN*benchmarkN; t++ {
-			rt := rand.Intn(benchmarkN * benchmarkN) // Pick a random t
-			s.Map(rt)
+		for d := 0; d < benchmarkN*benchmarkN; d++ {
+			rd := rand.Intn(benchmarkN * benchmarkN) // Pick a random d
+			s.Map(rd)
 		}
 	}
 }
 
-func BenchmarkMapInverse(benchmark *testing.B) {
-	for i := 0; i < benchmark.N; i++ {
+func BenchmarkMapInverse(b *testing.B) {
+	for i := 0; i < b.N; i++ {
 		s, err := hilbert.New(benchmarkN)
 		if err != nil {
-			benchmark.Fatalf("Failed to create hibert space: %s", err)
+			b.Fatalf("Failed to create hibert space: %s", err)
 		}
 
 		for x := 0; x < benchmarkN; x++ {
