@@ -144,14 +144,14 @@ func (h *HilbertImage) Draw() (draw.Image, error) {
 		// Move the snake along
 		centerX, centerY := px1+h.SquareSize/2, py1+h.SquareSize/2
 		if t == 0 {
-			snake.MoveTo(centerX, centerY);
+			snake.MoveTo(centerX, centerY)
 		} else {
 			snake.LineTo(centerX, centerY)
 		}
 	}
 
 	// Draw the snake at the end, to form one continuous line.
-	h.drawSnake(gc, snake);
+	h.drawSnake(gc, snake)
 
 	return img, nil
 }
