@@ -20,18 +20,8 @@
 //
 package hilbert
 
-import (
-	"errors"
-)
-
-// Errors returned when validating input.
-var (
-	ErrNotPositive   = errors.New("N must be greater than zero")
-	ErrNotPowerOfTwo = errors.New("N must be a power of two")
-	ErrOutOfRange    = errors.New("Value is out of range")
-)
-
 // Space represents a 2D Hilbert space of order N for mapping to and from.
+// Implements SpaceFilling interface.
 type Space struct {
 	N int
 }
@@ -53,14 +43,12 @@ func New(n int) (*Space, error) {
 	}, nil
 }
 
-func b2i(b bool) int {
-	if b {
-		return 1
-	}
-	return 0
+// Returns the width and height of the 2D space.
+func (s *Space) GetDimensions() (int, int) {
+	return s.N, s.N
 }
 
-// Map transforms a dimension value, t, in the range [0, n^2-1] to coordinates on the Hilbert
+// Map transforms a one dimension value, t, in the range [0, n^2-1] to coordinates on the Hilbert
 // curve in the two-dimension space, where x and y are within [0,n-1].
 func (s *Space) Map(t int) (x, y int, err error) {
 	if t < 0 || t >= s.N*s.N {
@@ -74,7 +62,7 @@ func (s *Space) Map(t int) (x, y int, err error) {
 			ry = !ry
 		}
 
-		x, y = rot(i, x, y, rx, ry)
+		x, y = s.rotate(i, x, y, rx, ry)
 
 		if rx {
 			x = x + i
@@ -105,14 +93,14 @@ func (s *Space) MapInverse(x, y int) (t int, err error) {
 		}
 		t += i * i * (a ^ b2i(ry))
 
-		x, y = rot(i, x, y, rx, ry)
+		x, y = s.rotate(i, x, y, rx, ry)
 	}
 
 	return
 }
 
-// Rotate/flip a quadrant appropriately
-func rot(n, x, y int, rx, ry bool) (int, int) {
+// rotate rotates and flips the quadrant appropriately.
+func (s *Space) rotate(n, x, y int, rx, ry bool) (int, int) {
 	if !ry {
 		if rx {
 			x = n - 1 - x
