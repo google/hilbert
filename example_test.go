@@ -25,6 +25,9 @@ func Example() {
 	// Create a Hilbert curve for mapping to and from a 16 by 16 space.
 	s, _ := hilbert.New(16)
 
+	// Create a Peano curve for mapping to and from a 27 by 27 space.
+	//s, _ := hilbert.NewPeano(27)
+
 	// Now map one dimension numbers in the range [0, N*N-1], to an x,y
 	// coordinate on the curve where both x and y are in the range [0, N-1].
 	x, y, _ := s.Map(96)

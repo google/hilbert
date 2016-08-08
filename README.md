@@ -1,12 +1,9 @@
 # Hilbert [![Build Status](https://img.shields.io/travis/google/hilbert.svg)](https://travis-ci.org/google/hilbert) [![Coverage](https://img.shields.io/coveralls/google/hilbert.svg)](https://coveralls.io/github/google/hilbert) [![Report card](https://goreportcard.com/badge/github.com/google/hilbert)](https://goreportcard.com/report/github.com/google/hilbert) [![GoDoc](https://godoc.org/github.com/google/hilbert?status.svg)](https://godoc.org/github.com/google/hilbert)
 
-Go package for mapping values to and from a Hilbert curve.
+Go package for mapping values to and from space-filling curves, such as
+[Hilbert](https://en.wikipedia.org/wiki/Hilbert_curve) and [Peano](https://en.wikipedia.org/wiki/Peano_curve) curves.
 
 ![Image of 8 by 8 Hilbert curve](images/hilbert.png)
-
-Converted from the code available on Wikipedia, with additional help from:
- * https://en.wikipedia.org/wiki/Hilbert_curve
- * http://bit-player.org/2013/mapping-the-hilbert-curve
 
 [Documentation available here](https://godoc.org/github.com/google/hilbert)
 
@@ -27,6 +24,9 @@ import "github.com/google/hilbert"
 	
 // Create a Hilbert curve for mapping to and from a 16 by 16 space.
 s, err := hilbert.New(16)
+
+// Create a Peano curve for mapping to and from a 27 by 27 space.
+//s, err := hilbert.NewPeano(27)
 
 // Now map one dimension numbers in the range [0, N*N-1], to an x,y
 // coordinate on the curve where both x and y are in the range [0, N-1].
