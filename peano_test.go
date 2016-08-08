@@ -1,4 +1,4 @@
-// Copyright 2015 Google Inc. All Rights Reserved.
+// Copyright 2016 Google Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,18 +15,11 @@
 package hilbert
 
 import (
-	"testing"
-)
-
-/*
-import (
 	"math/rand"
 	"testing"
-
-	"github.com/google/hilbert"
 )
-const benchmarkN = 81
-*/
+
+const peanoBenchmarkN = 81
 
 // Test cases below assume N=9
 var peanoTestCases = []struct {
@@ -42,65 +35,66 @@ var peanoTestCases = []struct {
 	{7, 2, 1},
 	{8, 2, 2},
 	{9, 2, 3},
+	// TODO Add more
 }
 
-/*
-func TestNewErrors(t *testing.T) {
+func TestPeanoNewErrors(t *testing.T) {
 	var newTestCases = []struct {
-		n       int
-		wantErr error
+		n    int
+		want error
 	}{
-		{-1, hilbert.ErrNotPositive},
-		{0, hilbert.ErrNotPositive},
-		{3, hilbert.ErrNotPowerOfTwo},
-		{5, hilbert.ErrNotPowerOfTwo},
+		{-1, ErrNotPositive},
+		{0, ErrNotPositive},
+		{2, ErrNotPowerOfThree},
+		{4, ErrNotPowerOfThree},
 	}
 
 	for _, tc := range newTestCases {
-		s, err := hilbert.New(tc.n)
-		if s != nil || err != tc.wantErr {
-			t.Errorf("New(%d) did not fail, want %q, got (%+v, %q)", tc.n, tc.wantErr, s, err)
+		s, err := NewPeano(tc.n)
+		if s != nil || err != tc.want {
+			t.Errorf("NewPeano(%d) = (%+v, %q) did not fail want (?, %q)", tc.n, s, err, tc.want)
 		}
 	}
 }
 
-func TestMapRangeErrors(t *testing.T) {
+func TestPeanoMapRangeErrors(t *testing.T) {
 	var mapRangeTestCases = []struct {
 		d       int
 		wantErr error
 	}{
-		{-1, hilbert.ErrOutOfRange},
+		{-1, ErrOutOfRange},
 		{0, nil},
-		{255, nil},
-		{256, hilbert.ErrOutOfRange},
+		{80, nil},
+		{81, ErrOutOfRange},
 	}
 
-	s, err := hilbert.New(16)
+	s, err := NewPeano(9)
 	if err != nil {
-		t.Fatalf("Failed to create hibert space: %s", err)
+		t.Fatalf("NewPeano(9) failed: %s", err)
 	}
 
 	for _, tc := range mapRangeTestCases {
 		if _, _, err = s.Map(tc.d); err != tc.wantErr {
-			t.Errorf("Map(%d) did not fail, want %q, got %q", tc.d, tc.wantErr, err)
+			t.Errorf("Map(%d) = %q want %q", tc.d, tc.wantErr, err)
 		}
 	}
 }
 
-func TestMapInverseRangeErrors(t *testing.T) {
+/*
+func TestPeanoMapInverseRangeErrors(t *testing.T) {
 	var mapInverseRangeTestCases = []struct {
 		x, y    int
 		wantErr error
 	}{
 		{0, 0, nil},
 		{15, 15, nil},
-		{-1, 0, hilbert.ErrOutOfRange},
-		{0, -1, hilbert.ErrOutOfRange},
-		{16, 0, hilbert.ErrOutOfRange},
-		{0, 16, hilbert.ErrOutOfRange},
+		{-1, 0, ErrOutOfRange},
+		{0, -1, ErrOutOfRange},
+		{16, 0, ErrOutOfRange},
+		{0, 16, ErrOutOfRange},
 	}
 
-	s, err := hilbert.New(16)
+	s, err := New(16)
 	if err != nil {
 		t.Fatalf("Failed to create hibert space: %s", err)
 	}
@@ -111,11 +105,12 @@ func TestMapInverseRangeErrors(t *testing.T) {
 		}
 	}
 }
+*/
 
-func TestSmallMap(t *testing.T) {
-	s, err := hilbert.New(1)
+func TestPeanoSmallMap(t *testing.T) {
+	s, err := NewPeano(1)
 	if err != nil {
-		t.Fatalf("Failed to create hibert space: %s", err)
+		t.Fatalf("NewPeano(1) failed: %s", err)
 	}
 
 	x, y, err := s.Map(0)
@@ -123,22 +118,25 @@ func TestSmallMap(t *testing.T) {
 		t.Errorf("Map(0) returned error: %s", err)
 	}
 	if x != 0 || y != 0 {
-		t.Errorf("Map(0) failed, want (0, 0), got (%d, %d)", x, y)
+		t.Errorf("Map(0) = (%d, %d) want (0, 0)", x, y)
 	}
 
-	d, err := s.MapInverse(0, 0)
-	if err != nil {
-		t.Errorf("MapInverse(0,0) returned error: %s", err)
-	}
-	if d != 0 {
-		t.Errorf("MapInverse(0, 0) failed, want 0, got %d", d)
-	}
+	/*
+		// TODO Test when MapInverse is implemented
+		d, err := s.MapInverse(0, 0)
+		if err != nil {
+			t.Errorf("MapInverse(0,0) returned error: %s", err)
+		}
+		if d != 0 {
+			t.Errorf("MapInverse(0, 0) failed, want 0, got %d", d)
+		}
+	*/
 }
-*/
+
 func TestPeanoMap(t *testing.T) {
 	s, err := NewPeano(9)
 	if err != nil {
-		t.Fatalf("Failed to create peano space: %s", err)
+		t.Fatalf("NewPeano(9) failed: %s", err)
 	}
 
 	for _, tc := range peanoTestCases {
@@ -153,8 +151,8 @@ func TestPeanoMap(t *testing.T) {
 }
 
 /*
-func TestMapInverse(t *testing.T) {
-	s, err := hilbert.New(16)
+func TestPeanoMapInverse(t *testing.T) {
+	s, err := New(16)
 	if err != nil {
 		t.Fatalf("Failed to create hibert space: %s", err)
 	}
@@ -170,8 +168,8 @@ func TestMapInverse(t *testing.T) {
 	}
 }
 
-func TestAllMapValues(t *testing.T) {
-	s, err := hilbert.New(16)
+func TestPeanoAllMapValues(t *testing.T) {
+	s, err := New(16)
 	if err != nil {
 		t.Fatalf("Failed to create hibert space: %s", err)
 	}
@@ -195,35 +193,36 @@ func TestAllMapValues(t *testing.T) {
 		}
 	}
 }
-
-func BenchmarkMap(b *testing.B) {
+*/
+func BenchmarkPeanoMap(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		s, err := hilbert.New(benchmarkN)
+		s, err := NewPeano(peanoBenchmarkN)
 		if err != nil {
-			b.Fatalf("Failed to create hibert space: %s", err)
+			b.Fatalf("NewPeano(%d) failed: %s", peanoBenchmarkN, err)
 		}
-		for d := 0; d < benchmarkN*benchmarkN; d++ {
+		for d := 0; d < peanoBenchmarkN*peanoBenchmarkN; d++ {
 			s.Map(d)
 		}
 	}
 }
 
-func BenchmarkMapRandom(b *testing.B) {
+func BenchmarkPeanoMapRandom(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		s, err := hilbert.New(benchmarkN)
+		s, err := NewPeano(peanoBenchmarkN)
 		if err != nil {
-			b.Fatalf("Failed to create hibert space: %s", err)
+			b.Fatalf("NewPeano(%d) failed: %s", peanoBenchmarkN, err)
 		}
-		for d := 0; d < benchmarkN*benchmarkN; d++ {
-			rd := rand.Intn(benchmarkN * benchmarkN) // Pick a random d
+		for d := 0; d < peanoBenchmarkN*peanoBenchmarkN; d++ {
+			rd := rand.Intn(peanoBenchmarkN * peanoBenchmarkN) // Pick a random d
 			s.Map(rd)
 		}
 	}
 }
 
-func BenchmarkMapInverse(b *testing.B) {
+/*
+func BenchmarkPeanoMapInverse(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		s, err := hilbert.New(benchmarkN)
+		s, err := New(benchmarkN)
 		if err != nil {
 			b.Fatalf("Failed to create hibert space: %s", err)
 		}
