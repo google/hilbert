@@ -18,10 +18,11 @@
 //
 // It is suggested you optimise/compress both images before uploading.
 //     go run demo/demo.go
-//     optipng -clobber -out images/hilbert.png hilbert.png
-//     optipng -clobber -out images/peano.png peano.png
+//     zopflipng -y hilbert.png images/hilbert.png
+//     zopflipng -y peano.png images/peano.png
 //     gifsicle -O -o images/hilbert_animation.gif hilbert_animation.gif
 //     gifsicle -O -o images/peano_animation.gif peano_animation.gif
+//
 package main
 
 import (
