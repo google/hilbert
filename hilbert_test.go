@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package hilbert_test
+package hilbert
 
 import (
 	"math/rand"
 	"testing"
-
-	"github.com/google/hilbert"
 )
 
 const benchmarkN = 32
@@ -52,14 +50,14 @@ func TestNewErrors(t *testing.T) {
 		n       int
 		wantErr error
 	}{
-		{-1, hilbert.ErrNotPositive},
-		{0, hilbert.ErrNotPositive},
-		{3, hilbert.ErrNotPowerOfTwo},
-		{5, hilbert.ErrNotPowerOfTwo},
+		{-1, ErrNotPositive},
+		{0, ErrNotPositive},
+		{3, ErrNotPowerOfTwo},
+		{5, ErrNotPowerOfTwo},
 	}
 
 	for _, tc := range newTestCases {
-		s, err := hilbert.New(tc.n)
+		s, err := New(tc.n)
 		if s != nil || err != tc.wantErr {
 			t.Errorf("New(%d) did not fail, want %q, got (%+v, %q)", tc.n, tc.wantErr, s, err)
 		}
@@ -71,13 +69,13 @@ func TestMapRangeErrors(t *testing.T) {
 		d       int
 		wantErr error
 	}{
-		{-1, hilbert.ErrOutOfRange},
+		{-1, ErrOutOfRange},
 		{0, nil},
 		{255, nil},
-		{256, hilbert.ErrOutOfRange},
+		{256, ErrOutOfRange},
 	}
 
-	s, err := hilbert.New(16)
+	s, err := New(16)
 	if err != nil {
 		t.Fatalf("Failed to create hibert space: %s", err)
 	}
@@ -96,13 +94,13 @@ func TestMapInverseRangeErrors(t *testing.T) {
 	}{
 		{0, 0, nil},
 		{15, 15, nil},
-		{-1, 0, hilbert.ErrOutOfRange},
-		{0, -1, hilbert.ErrOutOfRange},
-		{16, 0, hilbert.ErrOutOfRange},
-		{0, 16, hilbert.ErrOutOfRange},
+		{-1, 0, ErrOutOfRange},
+		{0, -1, ErrOutOfRange},
+		{16, 0, ErrOutOfRange},
+		{0, 16, ErrOutOfRange},
 	}
 
-	s, err := hilbert.New(16)
+	s, err := New(16)
 	if err != nil {
 		t.Fatalf("Failed to create hibert space: %s", err)
 	}
@@ -115,7 +113,7 @@ func TestMapInverseRangeErrors(t *testing.T) {
 }
 
 func TestSmallMap(t *testing.T) {
-	s, err := hilbert.New(1)
+	s, err := New(1)
 	if err != nil {
 		t.Fatalf("Failed to create hibert space: %s", err)
 	}
@@ -138,7 +136,7 @@ func TestSmallMap(t *testing.T) {
 }
 
 func TestMap(t *testing.T) {
-	s, err := hilbert.New(16)
+	s, err := New(16)
 	if err != nil {
 		t.Fatalf("Failed to create hibert space: %s", err)
 	}
@@ -155,7 +153,7 @@ func TestMap(t *testing.T) {
 }
 
 func TestMapInverse(t *testing.T) {
-	s, err := hilbert.New(16)
+	s, err := New(16)
 	if err != nil {
 		t.Fatalf("Failed to create hibert space: %s", err)
 	}
@@ -172,7 +170,7 @@ func TestMapInverse(t *testing.T) {
 }
 
 func TestAllMapValues(t *testing.T) {
-	s, err := hilbert.New(16)
+	s, err := New(16)
 	if err != nil {
 		t.Fatalf("Failed to create hibert space: %s", err)
 	}
@@ -199,7 +197,7 @@ func TestAllMapValues(t *testing.T) {
 
 func BenchmarkMap(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		s, err := hilbert.New(benchmarkN)
+		s, err := New(benchmarkN)
 		if err != nil {
 			b.Fatalf("Failed to create hibert space: %s", err)
 		}
@@ -211,7 +209,7 @@ func BenchmarkMap(b *testing.B) {
 
 func BenchmarkMapRandom(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		s, err := hilbert.New(benchmarkN)
+		s, err := New(benchmarkN)
 		if err != nil {
 			b.Fatalf("Failed to create hibert space: %s", err)
 		}
@@ -224,7 +222,7 @@ func BenchmarkMapRandom(b *testing.B) {
 
 func BenchmarkMapInverse(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		s, err := hilbert.New(benchmarkN)
+		s, err := New(benchmarkN)
 		if err != nil {
 			b.Fatalf("Failed to create hibert space: %s", err)
 		}
