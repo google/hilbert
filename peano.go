@@ -1,5 +1,7 @@
 package hilbert
 
+// Peano represents a 2D Peano curve of order N for mapping to and from.
+// Implements SpaceFilling interface.
 type Peano struct {
 	N int // Always a power of three, and is the width/height of the space.
 }
@@ -34,9 +36,9 @@ func NewPeano(n int) (*Peano, error) {
 	}, nil
 }
 
-// Returns the width and height of the 2D space.
-func (s *Peano) GetDimensions() (int, int) {
-	return s.N, s.N
+// GetDimensions returns the width and height of the 2D space.
+func (p *Peano) GetDimensions() (int, int) {
+	return p.N, p.N
 }
 
 // Map transforms a one dimension value, t, in the range [0, n^3-1] to coordinates on the Peano
@@ -70,6 +72,7 @@ func (p *Peano) Map(t int) (x, y int, err error) {
 	return x, y, nil
 }
 
+// rotate rotates the x and y coordinates depending on the current n depth.
 func (p *Peano) rotate(n, x, y, s int) (int, int) {
 
 	if n == 1 {
@@ -102,6 +105,8 @@ func (p *Peano) rotate(n, x, y, s int) (int, int) {
 	panic("assertation failure: this line should never be reached")
 }
 
+// MapInverse transform coordinates on the Peano curve from (x,y) to t.
+// NOTE IMPLEMENTED YET
 func (p *Peano) MapInverse(x, y int) (t int, err error) {
 	if x < 0 || x >= p.N || y < 0 || y >= p.N {
 		return -1, ErrOutOfRange

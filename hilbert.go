@@ -22,7 +22,7 @@ type Hilbert struct {
 	N int
 }
 
-// New returns a Hilbert space which maps integers to and from the curve.
+// NewHilbert returns a Hilbert space which maps integers to and from the curve.
 // n must be a power of two.
 func NewHilbert(n int) (*Hilbert, error) {
 	if n <= 0 {
@@ -73,7 +73,7 @@ func (s *Hilbert) Map(t int) (x, y int, err error) {
 	return
 }
 
-// MapInverse transform coordinates on Hilbert Curve from (x,y) to t.
+// MapInverse transform coordinates on Hilbert curve from (x,y) to t.
 func (s *Hilbert) MapInverse(x, y int) (t int, err error) {
 	if x < 0 || x >= s.N || y < 0 || y >= s.N {
 		return -1, ErrOutOfRange

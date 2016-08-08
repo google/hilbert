@@ -44,8 +44,8 @@ import (
 	"math"
 )
 
-// SpaceFillingImage facilitates the drawing of a space filing curve.
-type SpaceFillingImage struct {
+// spaceFillingImage facilitates the drawing of a space filing curve.
+type spaceFillingImage struct {
 	Algo hilbert.SpaceFilling
 
 	// Size of each square in pixels
@@ -61,16 +61,16 @@ type SpaceFillingImage struct {
 	SnakeColor      color.Color
 }
 
-func (h *SpaceFillingImage) toPixel(x, y int) (px, py float64) {
+func (h *spaceFillingImage) toPixel(x, y int) (px, py float64) {
 	return float64(x) * h.SquareWidth, float64(y) * h.SquareHeight
 }
 
-func (h *SpaceFillingImage) createImage() (draw.Image, error) {
+func (h *spaceFillingImage) createImage() (draw.Image, error) {
 	width, height := h.toPixel(h.Algo.GetDimensions())
 	return image.NewRGBA(image.Rect(0, 0, int(width), int(height))), nil
 }
 
-func (h *SpaceFillingImage) drawRectange(gc draw2d.GraphicContext, px1, py1, px2, py2 float64) {
+func (h *spaceFillingImage) drawRectange(gc draw2d.GraphicContext, px1, py1, px2, py2 float64) {
 	gc.SetFillColor(h.BackgroundColor)
 	gc.SetStrokeColor(h.GridColor)
 	gc.SetLineWidth(1)
@@ -79,7 +79,7 @@ func (h *SpaceFillingImage) drawRectange(gc draw2d.GraphicContext, px1, py1, px2
 	gc.FillStroke()
 }
 
-func (h *SpaceFillingImage) drawText(gc draw2d.GraphicContext, px1, py1 float64, t int) {
+func (h *spaceFillingImage) drawText(gc draw2d.GraphicContext, px1, py1 float64, t int) {
 	if !h.DrawText {
 		return
 	}
@@ -91,7 +91,7 @@ func (h *SpaceFillingImage) drawText(gc draw2d.GraphicContext, px1, py1 float64,
 	gc.FillStringAt(text, px1+h.TextMargin, py1-top+h.TextMargin)
 }
 
-func (h *SpaceFillingImage) drawSnake(gc draw2d.GraphicContext, snake *draw2d.Path) {
+func (h *spaceFillingImage) drawSnake(gc draw2d.GraphicContext, snake *draw2d.Path) {
 	gc.SetStrokeColor(h.SnakeColor)
 	gc.SetLineCap(draw2d.SquareCap)
 	gc.SetLineJoin(draw2d.MiterJoin)
@@ -100,9 +100,9 @@ func (h *SpaceFillingImage) drawSnake(gc draw2d.GraphicContext, snake *draw2d.Pa
 	gc.Stroke(snake)
 }
 
-// CreateHilbertImage returns a new hilbertImage ready for drawing.
-func CreateSpaceFillingImage(algo hilbert.SpaceFilling, sqWidth, sqHeight float64) *SpaceFillingImage {
-	return &SpaceFillingImage{
+// createSpaceFillingImage returns a new SpaceFillingImage ready for drawing.
+func createSpaceFillingImage(algo hilbert.SpaceFilling, sqWidth, sqHeight float64) *spaceFillingImage {
+	return &spaceFillingImage{
 		Algo: algo,
 
 		SquareWidth:  sqWidth,
@@ -119,7 +119,7 @@ func CreateSpaceFillingImage(algo hilbert.SpaceFilling, sqWidth, sqHeight float6
 }
 
 // Draw uses the parameters in the hilbertImage and returns a Image
-func (h *SpaceFillingImage) Draw() (draw.Image, error) {
+func (h *spaceFillingImage) Draw() (draw.Image, error) {
 
 	img, err := h.createImage()
 	if err != nil {
@@ -219,7 +219,7 @@ func setupDraw2D() {
 func mainDrawOne(filename string, space hilbert.SpaceFilling) error {
 	log.Printf("Drawing one image %q", filename)
 
-	img, err := CreateSpaceFillingImage(space, 64, 64).Draw()
+	img, err := createSpaceFillingImage(space, 64, 64).Draw()
 	if err != nil {
 		return err
 	}
@@ -244,7 +244,7 @@ func mainDrawAnimation(filename string, newAlgo func(n int) hilbert.SpaceFilling
 		s := newAlgo(min + i)
 
 		width, height := s.GetDimensions()
-		h := CreateSpaceFillingImage(s, imageWidth/float64(width), imageHeight/float64(height))
+		h := createSpaceFillingImage(s, imageWidth/float64(width), imageHeight/float64(height))
 		h.DrawText = false
 		img, err := h.Draw()
 		if err != nil {
