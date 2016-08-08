@@ -23,7 +23,7 @@ import (
 func Example() {
 
 	// Create a Hilbert curve for mapping to and from a 16 by 16 space.
-	s, _ := hilbert.New(16)
+	s, _ := hilbert.NewHilbert(16)
 
 	// Create a Peano curve for mapping to and from a 27 by 27 space.
 	//s, _ := hilbert.NewPeano(27)

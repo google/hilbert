@@ -23,7 +23,7 @@ Example:
 import "github.com/google/hilbert"
 	
 // Create a Hilbert curve for mapping to and from a 16 by 16 space.
-s, err := hilbert.New(16)
+s, err := hilbert.NewHilbert(16)
 
 // Create a Peano curve for mapping to and from a 27 by 27 space.
 //s, err := hilbert.NewPeano(27)

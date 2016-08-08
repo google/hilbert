@@ -57,9 +57,9 @@ func TestNewErrors(t *testing.T) {
 	}
 
 	for _, tc := range newTestCases {
-		s, err := New(tc.n)
+		s, err := NewHilbert(tc.n)
 		if s != nil || err != tc.wantErr {
-			t.Errorf("New(%d) did not fail, want %q, got (%+v, %q)", tc.n, tc.wantErr, s, err)
+			t.Errorf("NewHilbert(%d) did not fail, want %q, got (%+v, %q)", tc.n, tc.wantErr, s, err)
 		}
 	}
 }
@@ -75,7 +75,7 @@ func TestMapRangeErrors(t *testing.T) {
 		{256, ErrOutOfRange},
 	}
 
-	s, err := New(16)
+	s, err := NewHilbert(16)
 	if err != nil {
 		t.Fatalf("Failed to create hibert space: %s", err)
 	}
@@ -100,7 +100,7 @@ func TestMapInverseRangeErrors(t *testing.T) {
 		{0, 16, ErrOutOfRange},
 	}
 
-	s, err := New(16)
+	s, err := NewHilbert(16)
 	if err != nil {
 		t.Fatalf("Failed to create hibert space: %s", err)
 	}
@@ -113,7 +113,7 @@ func TestMapInverseRangeErrors(t *testing.T) {
 }
 
 func TestSmallMap(t *testing.T) {
-	s, err := New(1)
+	s, err := NewHilbert(1)
 	if err != nil {
 		t.Fatalf("Failed to create hibert space: %s", err)
 	}
@@ -136,7 +136,7 @@ func TestSmallMap(t *testing.T) {
 }
 
 func TestMap(t *testing.T) {
-	s, err := New(16)
+	s, err := NewHilbert(16)
 	if err != nil {
 		t.Fatalf("Failed to create hibert space: %s", err)
 	}
@@ -153,7 +153,7 @@ func TestMap(t *testing.T) {
 }
 
 func TestMapInverse(t *testing.T) {
-	s, err := New(16)
+	s, err := NewHilbert(16)
 	if err != nil {
 		t.Fatalf("Failed to create hibert space: %s", err)
 	}
@@ -170,7 +170,7 @@ func TestMapInverse(t *testing.T) {
 }
 
 func TestAllMapValues(t *testing.T) {
-	s, err := New(16)
+	s, err := NewHilbert(16)
 	if err != nil {
 		t.Fatalf("Failed to create hibert space: %s", err)
 	}
@@ -197,7 +197,7 @@ func TestAllMapValues(t *testing.T) {
 
 func BenchmarkMap(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		s, err := New(benchmarkN)
+		s, err := NewHilbert(benchmarkN)
 		if err != nil {
 			b.Fatalf("Failed to create hibert space: %s", err)
 		}
@@ -209,7 +209,7 @@ func BenchmarkMap(b *testing.B) {
 
 func BenchmarkMapRandom(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		s, err := New(benchmarkN)
+		s, err := NewHilbert(benchmarkN)
 		if err != nil {
 			b.Fatalf("Failed to create hibert space: %s", err)
 		}
@@ -222,7 +222,7 @@ func BenchmarkMapRandom(b *testing.B) {
 
 func BenchmarkMapInverse(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		s, err := New(benchmarkN)
+		s, err := NewHilbert(benchmarkN)
 		if err != nil {
 			b.Fatalf("Failed to create hibert space: %s", err)
 		}

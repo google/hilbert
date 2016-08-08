@@ -12,23 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package hilbert provides mapping of values to and from Hilbert curves.
-//
-// Converted from the code available on Wikipedia code, with additional help from:
-//  * https://en.wikipedia.org/wiki/Hilbert_curve
-//  * http://bit-player.org/2013/mapping-the-hilbert-curve
-//
+// Package hilbert is for mapping values to and from space-filling curves, such as Hilbert and Peano
+// curves.
 package hilbert
 
-// Space represents a 2D Hilbert space of order N for mapping to and from.
+// Hilbert represents a 2D Hilbert space of order N for mapping to and from.
 // Implements SpaceFilling interface.
-type Space struct {
+type Hilbert struct {
 	N int
 }
 
 // New returns a Hilbert space which maps integers to and from the curve.
 // n must be a power of two.
-func New(n int) (*Space, error) {
+func NewHilbert(n int) (*Hilbert, error) {
 	if n <= 0 {
 		return nil, ErrNotPositive
 	}
@@ -38,19 +34,19 @@ func New(n int) (*Space, error) {
 		return nil, ErrNotPowerOfTwo
 	}
 
-	return &Space{
+	return &Hilbert{
 		N: n,
 	}, nil
 }
 
-// Returns the width and height of the 2D space.
-func (s *Space) GetDimensions() (int, int) {
+// GetDimensions returns the width and height of the 2D space.
+func (s *Hilbert) GetDimensions() (int, int) {
 	return s.N, s.N
 }
 
 // Map transforms a one dimension value, t, in the range [0, n^2-1] to coordinates on the Hilbert
 // curve in the two-dimension space, where x and y are within [0,n-1].
-func (s *Space) Map(t int) (x, y int, err error) {
+func (s *Hilbert) Map(t int) (x, y int, err error) {
 	if t < 0 || t >= s.N*s.N {
 		return -1, -1, ErrOutOfRange
 	}
@@ -78,7 +74,7 @@ func (s *Space) Map(t int) (x, y int, err error) {
 }
 
 // MapInverse transform coordinates on Hilbert Curve from (x,y) to t.
-func (s *Space) MapInverse(x, y int) (t int, err error) {
+func (s *Hilbert) MapInverse(x, y int) (t int, err error) {
 	if x < 0 || x >= s.N || y < 0 || y >= s.N {
 		return -1, ErrOutOfRange
 	}
@@ -100,7 +96,7 @@ func (s *Space) MapInverse(x, y int) (t int, err error) {
 }
 
 // rotate rotates and flips the quadrant appropriately.
-func (s *Space) rotate(n, x, y int, rx, ry bool) (int, int) {
+func (s *Hilbert) rotate(n, x, y int, rx, ry bool) (int, int) {
 	if !ry {
 		if rx {
 			x = n - 1 - x

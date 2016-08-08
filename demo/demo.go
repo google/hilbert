@@ -267,7 +267,7 @@ func main() {
 	setupDraw2D()
 
 	newHilbert := func(n int) hilbert.SpaceFilling {
-		s, err := hilbert.New(int(math.Pow(2, float64(n))))
+		s, err := hilbert.NewHilbert(int(math.Pow(2, float64(n))))
 		if err != nil {
 			panic(fmt.Errorf("failed to create hilbert space: %s", err.Error()))
 		}
