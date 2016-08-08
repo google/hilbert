@@ -38,20 +38,30 @@ t, err := s.MapInverse(x, y)
 
 ## Demo
 
-The demo directory contains an example on how to draw an image of a Hilbert
-curve, as well as animations of varying sized Hilbert spaces.
+The demo directory contains an example on how to draw an images of Hilbert and Peano curves, as well
+as animations of varying sizes for both.
 
 ```bash
 go run $GOPATH/src/github.com/google/hilbert/demo/demo.go
 ```
 
-and the following two images are generated. One a simple 8x8 grid:
+and the following images are generated. 
 
-![Image of 8 by 8 Hilbert curve](images/hilbert.png)
+Simple 8x8 Hibert curve:
 
-and an animation of N in the range 1..8:
+![8x8 Hilbert curve image](images/hilbert.png)
+
+Simple 9x9 Peano curve:
+
+![9x9 Hilbert curve image](images/peano.png)
+
+Animation of Hibert curve with N in the range 1..8:
 
 ![Hilbert curve animation](images/hilbert_animation.gif)
+
+Animation of Peano curve with N in the range 1..6:
+
+![Peano curve animation](images/peano_animation.gif)
 
 ## Licence (Apache 2)
 

@@ -17,9 +17,11 @@
 // 	hilbert.png, hilbert_animation.gif, peano.png, and peano_animation.gif
 //
 // It is suggested you optimise/compress both images before uploading.
-//     optipng hilbert.png
-//     gifsicle -O -o hilbert_animation_compressed.gif hilbert_animation.gif
-//
+//     go run demo/demo.go
+//     optipng -clobber -out images/hilbert.png hilbert.png
+//     optipng -clobber -out images/peano.png peano.png
+//     gifsicle -O -o images/hilbert_animation.gif hilbert_animation.gif
+//     gifsicle -O -o images/peano_animation.gif peano_animation.gif
 package main
 
 import (
