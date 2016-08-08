@@ -102,7 +102,7 @@ func (p *Peano) rotate(n, x, y, s int) (int, int) {
 		return x, y // normal
 	}
 
-	panic("assertation failure: this line should never be reached")
+	panic("assertion failure: this line should never be reached")
 }
 
 // MapInverse transform coordinates on the Peano curve from (x,y) to t.
