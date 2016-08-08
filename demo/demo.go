@@ -13,8 +13,8 @@
 // limitations under the License.
 
 // Package main is a simple demo to show how to use the hilbert library
-// When ran, this demo will create two images, hilbert.png, and
-// hilbert_animation.gif.
+// When ran, this demo will create the following images:
+// 	hilbert.png, hilbert_animation.gif, peano.png, and peano_animation.gif
 //
 // It is suggested you optimise/compress both images before uploading.
 //     optipng hilbert.png
@@ -38,12 +38,16 @@ import (
 	"github.com/llgcode/draw2d"
 	"github.com/llgcode/draw2d/draw2dimg"
 	"github.com/llgcode/draw2d/draw2dkit"
+	"math"
 )
 
-// HilbertImage facilitates the drawing of a Hilbert Curve
-type HilbertImage struct {
-	N          int     // Hilbert Space is N by N
-	SquareSize float64 // Size of each square in pixels
+// SpaceFillingImage facilitates the drawing of a space filing curve.
+type SpaceFillingImage struct {
+	Algo hilbert.SpaceFilling
+
+	// Size of each square in pixels
+	SquareWidth  float64
+	SquareHeight float64
 
 	DrawText   bool    // Should text be drawn on the image
 	TextMargin float64 // Margin around text in pixels
@@ -54,16 +58,16 @@ type HilbertImage struct {
 	SnakeColor      color.Color
 }
 
-func (h *HilbertImage) toPixel(x, y int) (px, py float64) {
-	return float64(x) * h.SquareSize, float64(y) * h.SquareSize
+func (h *SpaceFillingImage) toPixel(x, y int) (px, py float64) {
+	return float64(x) * h.SquareWidth, float64(y) * h.SquareHeight
 }
 
-func (h *HilbertImage) createImage() (draw.Image, error) {
-	width, height := h.toPixel(h.N, h.N)
+func (h *SpaceFillingImage) createImage() (draw.Image, error) {
+	width, height := h.toPixel(h.Algo.GetDimensions())
 	return image.NewRGBA(image.Rect(0, 0, int(width), int(height))), nil
 }
 
-func (h *HilbertImage) drawRectange(gc draw2d.GraphicContext, px1, py1, px2, py2 float64) {
+func (h *SpaceFillingImage) drawRectange(gc draw2d.GraphicContext, px1, py1, px2, py2 float64) {
 	gc.SetFillColor(h.BackgroundColor)
 	gc.SetStrokeColor(h.GridColor)
 	gc.SetLineWidth(1)
@@ -72,7 +76,7 @@ func (h *HilbertImage) drawRectange(gc draw2d.GraphicContext, px1, py1, px2, py2
 	gc.FillStroke()
 }
 
-func (h *HilbertImage) drawText(gc draw2d.GraphicContext, px1, py1 float64, t int) {
+func (h *SpaceFillingImage) drawText(gc draw2d.GraphicContext, px1, py1 float64, t int) {
 	if !h.DrawText {
 		return
 	}
@@ -84,7 +88,7 @@ func (h *HilbertImage) drawText(gc draw2d.GraphicContext, px1, py1 float64, t in
 	gc.FillStringAt(text, px1+h.TextMargin, py1-top+h.TextMargin)
 }
 
-func (h *HilbertImage) drawSnake(gc draw2d.GraphicContext, snake *draw2d.Path) {
+func (h *SpaceFillingImage) drawSnake(gc draw2d.GraphicContext, snake *draw2d.Path) {
 	gc.SetStrokeColor(h.SnakeColor)
 	gc.SetLineCap(draw2d.SquareCap)
 	gc.SetLineJoin(draw2d.MiterJoin)
@@ -94,10 +98,12 @@ func (h *HilbertImage) drawSnake(gc draw2d.GraphicContext, snake *draw2d.Path) {
 }
 
 // CreateHilbertImage returns a new hilbertImage ready for drawing.
-func CreateHilbertImage(n int, squareSize float64) *HilbertImage {
-	return &HilbertImage{
-		N:          n,
-		SquareSize: squareSize,
+func CreateSpaceFillingImage(algo hilbert.SpaceFilling, sqWidth, sqHeight float64) *SpaceFillingImage {
+	return &SpaceFillingImage{
+		Algo: algo,
+
+		SquareWidth:  sqWidth,
+		SquareHeight: sqHeight,
 
 		DrawText:   true,
 		TextMargin: 3.0,
@@ -110,13 +116,7 @@ func CreateHilbertImage(n int, squareSize float64) *HilbertImage {
 }
 
 // Draw uses the parameters in the hilbertImage and returns a Image
-func (h *HilbertImage) Draw() (draw.Image, error) {
-
-	// Create a Hilbert Curve Mapper
-	s, err := hilbert.New(h.N)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to create hilbert space: %s", err.Error())
-	}
+func (h *SpaceFillingImage) Draw() (draw.Image, error) {
 
 	img, err := h.createImage()
 	if err != nil {
@@ -126,10 +126,12 @@ func (h *HilbertImage) Draw() (draw.Image, error) {
 	gc := draw2dimg.NewGraphicContext(img)
 	snake := &draw2d.Path{}
 
-	for t := 0; t < h.N*h.N; t++ {
+	width, height := h.Algo.GetDimensions()
+
+	for t := 0; t < width*height; t++ {
 
 		// Map the 1D number into the 2D space
-		x, y, err := s.Map(t)
+		x, y, err := h.Algo.Map(t)
 		if err != nil {
 			return nil, err
 		}
@@ -142,7 +144,7 @@ func (h *HilbertImage) Draw() (draw.Image, error) {
 		h.drawText(gc, px1, py1, t)
 
 		// Move the snake along
-		centerX, centerY := px1+h.SquareSize/2, py1+h.SquareSize/2
+		centerX, centerY := px1+h.SquareWidth/2, py1+h.SquareHeight/2
 		if t == 0 {
 			snake.MoveTo(centerX, centerY)
 		} else {
@@ -211,21 +213,21 @@ func setupDraw2D() {
 	draw2d.SetFontFolder(filepath.Join(p.Dir, "resource", "font"))
 }
 
-func mainDrawOne() error {
-	log.Printf("Drawing one image")
+func mainDrawOne(filename string, space hilbert.SpaceFilling) error {
+	log.Printf("Drawing one image %q", filename)
 
-	img, err := CreateHilbertImage(8, 64).Draw()
+	img, err := CreateSpaceFillingImage(space, 64, 64).Draw()
 	if err != nil {
 		return err
 	}
-	return draw2dimg.SaveToPngFile("hilbert.png", img)
+	return draw2dimg.SaveToPngFile(filename, img)
 }
 
-func mainDrawAnimation() error {
-	log.Printf("Drawing animation")
+func mainDrawAnimation(filename string, newAlgo func(n int) hilbert.SpaceFilling, min, max int) error {
+	log.Printf("Drawing animation %q", filename)
 
-	iterations := 8
-	imageWidth := 512.0
+	iterations := max - min
+	imageWidth, imageHeight := 512.0, 512.0
 
 	g := gif.GIF{
 		Image:     make([]*image.Paletted, iterations),
@@ -236,8 +238,10 @@ func mainDrawAnimation() error {
 	for i := 0; i < iterations; i++ {
 		log.Printf("    Drawing frame %d", i)
 
-		n := 1 << uint(i+1)
-		h := CreateHilbertImage(n, imageWidth/float64(n))
+		s := newAlgo(min + i)
+
+		width, height := s.GetDimensions()
+		h := CreateSpaceFillingImage(s, imageWidth/float64(width), imageHeight/float64(height))
 		h.DrawText = false
 		img, err := h.Draw()
 		if err != nil {
@@ -248,7 +252,7 @@ func mainDrawAnimation() error {
 		g.Delay[i] = 200                    // 200 x 100th of a second = 2 second
 	}
 
-	f, err := os.Create("hilbert_animation.gif")
+	f, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
@@ -259,14 +263,35 @@ func main() {
 
 	setupDraw2D()
 
-	err := mainDrawOne()
-	if err != nil {
+	newHilbert := func(n int) hilbert.SpaceFilling {
+		s, err := hilbert.New(int(math.Pow(2, float64(n))))
+		if err != nil {
+			panic(fmt.Errorf("failed to create hilbert space: %s", err.Error()))
+		}
+		return s
+	}
+
+	newPeano := func(n int) hilbert.SpaceFilling {
+		s, err := hilbert.NewPeano(int(math.Pow(3, float64(n))))
+		if err != nil {
+			panic(fmt.Errorf("failed to create peano space: %s", err.Error()))
+		}
+		return s
+	}
+
+	if err := mainDrawOne("hilbert.png", newHilbert(3)); err != nil {
 		log.Fatalf("Failed to draw image: %s", err.Error())
 	}
 
-	err = mainDrawAnimation()
-	if err != nil {
+	if err := mainDrawAnimation("hilbert_animation.gif", newHilbert, 1, 8); err != nil {
 		log.Fatalf("Failed to draw animation: %s", err.Error())
 	}
 
+	if err := mainDrawOne("peano.png", newPeano(2)); err != nil {
+		log.Fatalf("Failed to draw image: %s", err.Error())
+	}
+
+	if err := mainDrawAnimation("peano_animation.gif", newPeano, 1, 6); err != nil {
+		log.Fatalf("Failed to draw animation: %s", err.Error())
+	}
 }
