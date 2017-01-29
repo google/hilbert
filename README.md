@@ -20,20 +20,41 @@ go get github.com/google/hilbert
 Example:
 
 ```go
-import "github.com/google/hilbert"
-	
-// Create a Hilbert curve for mapping to and from a 16 by 16 space.
-s, err := hilbert.NewHilbert(16)
+package main
 
-// Create a Peano curve for mapping to and from a 27 by 27 space.
-//s, err := hilbert.NewPeano(27)
+import (
+    "github.com/dsoprea/hilbert"
+)
 
-// Now map one dimension numbers in the range [0, N*N-1], to an x,y
-// coordinate on the curve where both x and y are in the range [0, N-1].
-x, y, err := s.Map(t)
+func main() {
+    // Create a Hilbert curve for mapping to and from a 16 by 16 space.
+    //s, err := hilbert.NewHilbert64(16)
+    s, err := hilbert.NewHilbert(16)
+    if err != nil {
+        panic(err)
+    }
 
-// Also map back from (x,y) to t.
-t, err := s.MapInverse(x, y)
+    // Create a Peano curve for mapping to and from a 27 by 27 space.
+    //s, err := hilbert.NewPeano64(27)
+    //s, err := hilbert.NewPeano(27)
+
+    t := 112
+
+    // Now map one dimension numbers in the range [0, N*N-1], to an x,y
+    // coordinate on the curve where both x and y are in the range [0, N-1].
+    x, y, err := s.Map(t)
+    if err != nil {
+        panic(err)
+    }
+
+    // (x, y) <= (7, 11)
+
+    // Also map back from (x,y) to t.
+    t, err = s.MapInverse(x, y)
+    if err != nil {
+        panic(err)
+    }
+}
 ```
 
 ## Demo
