@@ -27,31 +27,28 @@ package main
 
 import (
 	"fmt"
-	"go/build"
 	"image"
 	"image/color"
-	"image/draw"
 	"image/gif"
 	"log"
 	"os"
-	"path/filepath"
-	"strconv"
 
+	"github.com/fogleman/gg"
 	"github.com/google/hilbert"
-	"github.com/llgcode/draw2d"
-	"github.com/llgcode/draw2d/draw2dimg"
-	"github.com/llgcode/draw2d/draw2dkit"
+	"github.com/google/hilbert/demo/lib"
 	"math"
+	"strconv"
 )
 
 // spaceFillingImage facilitates the drawing of a space filing curve.
 type spaceFillingImage struct {
-	Algo hilbert.SpaceFilling
+	Curve hilbert.SpaceFilling
 
 	// Size of each square in pixels
 	SquareWidth  float64
 	SquareHeight float64
 
+	DrawGrid   bool
 	DrawText   bool    // Should text be drawn on the image
 	TextMargin float64 // Margin around text in pixels
 
@@ -60,60 +57,22 @@ type spaceFillingImage struct {
 	TextColor       color.Color
 	SnakeColor      color.Color
 
-	GridWidth float64
+	GridWidth  float64
 	SnakeWidth float64
 }
 
-func (h *spaceFillingImage) toPixel(x, y int) (px, py float64) {
-	return float64(x) * h.SquareWidth, float64(y) * h.SquareHeight
-}
-
-func (h *spaceFillingImage) createImage() (draw.Image, error) {
-	width, height := h.toPixel(h.Algo.GetDimensions())
-	return image.NewRGBA(image.Rect(0, 0, int(width), int(height))), nil
-}
-
-func (h *spaceFillingImage) drawRectange(gc draw2d.GraphicContext, px1, py1, px2, py2 float64) {
-	gc.SetFillColor(h.BackgroundColor)
-	gc.SetStrokeColor(h.GridColor)
-	gc.SetLineWidth(h.GridWidth)
-
-	draw2dkit.Rectangle(gc, px1, py1, px2, py2)
-	gc.FillStroke()
-}
-
-func (h *spaceFillingImage) drawText(gc draw2d.GraphicContext, px1, py1 float64, t int) {
-	if !h.DrawText {
-		return
-	}
-
-	text := strconv.Itoa(t)
-	_, top, _, _ := gc.GetStringBounds(text)
-
-	gc.SetFillColor(h.TextColor)
-	gc.FillStringAt(text, px1+h.TextMargin, py1-top+h.TextMargin)
-}
-
-func (h *spaceFillingImage) drawSnake(gc draw2d.GraphicContext, snake *draw2d.Path) {
-	gc.SetStrokeColor(h.SnakeColor)
-	gc.SetLineWidth(h.SnakeWidth)
-
-	// Note line caps and joins don't work https://github.com/llgcode/draw2d/issues/27
-	gc.SetLineCap(draw2d.SquareCap)
-	gc.SetLineJoin(draw2d.MiterJoin)
-
-	gc.Stroke(snake)
-}
-
 // createSpaceFillingImage returns a new SpaceFillingImage ready for drawing.
-// sqWidth and sqHeight are the dimensions of each individual square in the resulting image.
-func createSpaceFillingImage(algo hilbert.SpaceFilling, sqWidth, sqHeight float64) *spaceFillingImage {
+// squareWidth and squareHeight are the dimensions of each individual square in the resulting image.
+func createSpaceFillingImage(curve hilbert.SpaceFilling, squareWidth, squareHeight float64) *spaceFillingImage {
 	return &spaceFillingImage{
-		Algo: algo,
+		Curve: curve,
 
-		SquareWidth:  sqWidth,
-		SquareHeight: sqHeight,
+		SquareWidth:  squareWidth,
+		SquareHeight: squareHeight,
 
+		// All the default values
+
+		DrawGrid:   true,
 		DrawText:   true,
 		TextMargin: 3.0,
 
@@ -122,121 +81,97 @@ func createSpaceFillingImage(algo hilbert.SpaceFilling, sqWidth, sqHeight float6
 		TextColor:       color.RGBA{0x33, 0x33, 0x33, 0xff},
 		SnakeColor:      color.RGBA{0x33, 0x33, 0x33, 0xff},
 
-		GridWidth: 1.0,
+		GridWidth:  1.0,
 		SnakeWidth: 2.0,
 	}
 }
 
+func (h *spaceFillingImage) toPixel(x, y int) (float64, float64) {
+	return float64(x) * h.SquareWidth, float64(y) * h.SquareHeight
+}
 
-// Draw uses the parameters in the hilbertImage and returns a Image
-func (h *spaceFillingImage) Draw() (draw.Image, error) {
+func (h *spaceFillingImage) drawGrid(gc *gg.Context, width, height int) {
 
-	img, err := h.createImage()
-	if err != nil {
-		return nil, err
+	// Draw grid, vertical then horizontal lines
+	for x := 0; x <= width; x++ {
+		gc.MoveTo(h.toPixel(x, 0))
+		gc.LineTo(h.toPixel(x, height))
 	}
 
-	gc := draw2dimg.NewGraphicContext(img)
-	snake := &draw2d.Path{}
+	for y := 0; y < height; y++ {
+		gc.MoveTo(h.toPixel(0, y))
+		gc.LineTo(h.toPixel(width, y))
+	}
 
-	width, height := h.Algo.GetDimensions()
+	gc.SetLineWidth(h.GridWidth)
+	gc.SetColor(h.GridColor)
+	gc.Stroke()
+}
+
+// Draw uses the parameters in the hilbertImage and returns a Image
+func (h *spaceFillingImage) Draw() (*gg.Context, error) {
+
+	width, height := h.Curve.GetDimensions()
+	pwidth, pheight := h.toPixel(width, height)
+
+	gc := gg.NewContext(int(pwidth), int(pheight))
+	gc.SetColor(h.BackgroundColor)
+	gc.Clear()
+
+	if h.DrawGrid {
+		h.drawGrid(gc, width, height)
+	}
 
 	for t := 0; t < width*height; t++ {
 
 		// Map the 1D number into the 2D space
-		x, y, err := h.Algo.Map(t)
+		x, y, err := h.Curve.Map(t)
 		if err != nil {
 			return nil, err
 		}
 
-		px1, py1 := h.toPixel(x, y)
-		px2, py2 := h.toPixel(x+1, y+1)
+		px, py := h.toPixel(x, y)
 
 		// Draw the grid for t
-		h.drawRectange(gc, px1, py1, px2, py2)
-		h.drawText(gc, px1, py1, t)
+		if h.DrawText {
+			text := strconv.Itoa(t)
+
+			gc.SetColor(h.TextColor)
+			gc.DrawStringAnchored(text, px+h.TextMargin, py, 0, 1)
+		}
 
 		// Move the snake along
-		centerX, centerY := px1+h.SquareWidth/2, py1+h.SquareHeight/2
+		centerX, centerY := px+h.SquareWidth/2, py+h.SquareHeight/2
 		if t == 0 {
-			snake.MoveTo(centerX, centerY)
+			gc.MoveTo(centerX, centerY)
 		} else {
-			snake.LineTo(centerX, centerY)
+			gc.LineTo(centerX, centerY)
 		}
 	}
 
 	// Draw the snake at the end, to form one continuous line.
-	h.drawSnake(gc, snake)
+	gc.SetColor(h.SnakeColor)
+	gc.SetLineWidth(h.SnakeWidth)
 
-	return img, nil
+	gc.SetLineCap(gg.LineCapSquare)
+	gc.SetLineJoin(gg.LineJoinRound)
+
+	gc.Stroke()
+
+	return gc, nil
 }
 
-// uniqueColors returns the first 256 unique color.Color used in this image.
-// TODO consider moving into a helper/graphics library
-func uniqueColors(src image.Image) []color.Color {
-	var colors []color.Color
-
-	bounds := src.Bounds()
-
-	for x := 0; x < bounds.Dx(); x++ {
-		for y := 0; y < bounds.Dy(); y++ {
-			c := src.At(x, y)
-			found := false
-			for i := 0; i < len(colors) && !found; i++ {
-				if colors[i] == c {
-					found = true
-				}
-			}
-			if !found {
-				colors = append(colors, c)
-				if len(colors) >= 256 {
-					return colors
-				}
-			}
-		}
-	}
-
-	return colors
-}
-
-// convertToPaletted converts the given image into a paletted one.
-// Colors are converted using a naive approache. The first 256 unique colors
-// are retained, and the rest are mapped to hopefully a nearby color.
-func convertToPaletted(src image.Image) *image.Paletted {
-
-	if dst, ok := src.(*image.Paletted); ok {
-		return dst
-	}
-
-	bounds := src.Bounds()
-	colors := uniqueColors(src)
-
-	dst := image.NewPaletted(bounds, color.Palette(colors))
-	draw.Draw(dst, bounds, src, bounds.Min, draw.Src)
-	return dst
-}
-
-// setupDraw2D ensure Draw2D can find its fonts.
-func setupDraw2D() {
-	p, err := build.Default.Import("github.com/llgcode/draw2d", "", build.FindOnly)
-	if err != nil {
-		log.Fatalf("Couldn't find llgcode/draw2d files: %v", err)
-	}
-
-	draw2d.SetFontFolder(filepath.Join(p.Dir, "resource", "font"))
-}
-
-func mainDrawOne(filename string, space hilbert.SpaceFilling) error {
+func mainDrawOne(filename string, curve hilbert.SpaceFilling) error {
 	log.Printf("Drawing one image %q", filename)
 
-	img, err := createSpaceFillingImage(space, 64, 64).Draw()
+	img, err := createSpaceFillingImage(curve, 64, 64).Draw()
 	if err != nil {
 		return err
 	}
-	return draw2dimg.SaveToPngFile(filename, img)
+	return img.SavePNG(filename)
 }
 
-func mainDrawAnimation(filename string, newAlgo func(n int) hilbert.SpaceFilling, min, max int) error {
+func mainDrawAnimation(filename string, newCurve func(n int) hilbert.SpaceFilling, min, max int) error {
 	log.Printf("Drawing animation %q", filename)
 
 	iterations := max - min
@@ -251,18 +186,18 @@ func mainDrawAnimation(filename string, newAlgo func(n int) hilbert.SpaceFilling
 	for i := 0; i < iterations; i++ {
 		log.Printf("    Drawing frame %d", i)
 
-		s := newAlgo(min + i)
+		curve := newCurve(min + i)
 
-		width, height := s.GetDimensions()
-		h := createSpaceFillingImage(s, imageWidth/float64(width), imageHeight/float64(height))
+		width, height := curve.GetDimensions()
+		h := createSpaceFillingImage(curve, imageWidth/float64(width), imageHeight/float64(height))
 		h.DrawText = false
 		img, err := h.Draw()
 		if err != nil {
 			return err
 		}
 
-		g.Image[i] = convertToPaletted(img) // draw2d doesn't support paletted images, so we convert
-		g.Delay[i] = 200                    // 200 x 100th of a second = 2 second
+		g.Image[i] = lib.ConvertToPaletted(img.Image())
+		g.Delay[i] = 200 // 200 x 100th of a second = 2 second
 	}
 
 	f, err := os.Create(filename)
@@ -272,27 +207,20 @@ func mainDrawAnimation(filename string, newAlgo func(n int) hilbert.SpaceFilling
 	return gif.EncodeAll(f, &g)
 }
 
-func mainDrawLogo() error {
-	h, err := hilbert.NewHilbert(8)
+func mainDrawLogo(curve hilbert.SpaceFilling) error {
+	h := createSpaceFillingImage(curve, 64, 64)
+	h.DrawText = false
+	h.DrawGrid = false
+	h.SnakeWidth = 15
+
+	img, err := h.Draw()
 	if err != nil {
 		return err
 	}
-
-	i := createSpaceFillingImage(h, 64, 64)
-	i.DrawText = false
-	i.GridColor = i.BackgroundColor
-	i.SnakeWidth = 15
-
-	img, err := i.Draw()
-	if err != nil {
-		return err
-	}
-	return draw2dimg.SaveToPngFile("logo.png", img)
+	return img.SavePNG("logo.png")
 }
 
 func main() {
-
-	setupDraw2D()
 
 	newHilbert := func(n int) hilbert.SpaceFilling {
 		s, err := hilbert.NewHilbert(int(math.Pow(2, float64(n))))
@@ -310,7 +238,6 @@ func main() {
 		return s
 	}
 
-
 	if err := mainDrawOne("hilbert.png", newHilbert(3)); err != nil {
 		log.Fatalf("Failed to draw image: %s", err.Error())
 	}
@@ -327,7 +254,7 @@ func main() {
 		log.Fatalf("Failed to draw animation: %s", err.Error())
 	}
 
-	if err := mainDrawLogo(); err != nil {
+	if err := mainDrawLogo(newHilbert(3)); err != nil {
 		log.Fatalf("Failed to draw image: %s", err.Error())
 	}
 }
