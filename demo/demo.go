@@ -18,6 +18,7 @@
 //
 // It is suggested you optimise/compress both images before uploading.
 //     go run demo/demo.go
+//     zopflipng -y logo.png images/logo.png
 //     zopflipng -y hilbert.png images/hilbert.png
 //     zopflipng -y peano.png images/peano.png
 //     gifsicle -O -o images/hilbert_animation.gif hilbert_animation.gif
@@ -207,17 +208,22 @@ func mainDrawAnimation(filename string, newCurve func(n int) hilbert.SpaceFillin
 	return gif.EncodeAll(f, &g)
 }
 
-func mainDrawLogo(curve hilbert.SpaceFilling) error {
-	h := createSpaceFillingImage(curve, 64, 64)
+func mainDrawLogo(filename string, curve hilbert.SpaceFilling) error {
+	const scale = 8
+
+	log.Printf("Drawing logo %q", filename)
+
+	h := createSpaceFillingImage(curve, math.Pow(2, scale), math.Pow(2, scale))
 	h.DrawText = false
 	h.DrawGrid = false
-	h.SnakeWidth = 15
+	h.SnakeWidth = math.Pow(2, scale - 2)
+	h.BackgroundColor = color.Transparent
 
 	img, err := h.Draw()
 	if err != nil {
 		return err
 	}
-	return img.SavePNG("logo.png")
+	return img.SavePNG(filename)
 }
 
 func main() {
@@ -238,6 +244,10 @@ func main() {
 		return s
 	}
 
+	if err := mainDrawLogo("logo.png", newHilbert(4)); err != nil {
+		log.Fatalf("Failed to draw image: %s", err.Error())
+	}
+
 	if err := mainDrawOne("hilbert.png", newHilbert(3)); err != nil {
 		log.Fatalf("Failed to draw image: %s", err.Error())
 	}
@@ -254,7 +264,4 @@ func main() {
 		log.Fatalf("Failed to draw animation: %s", err.Error())
 	}
 
-	if err := mainDrawLogo(newHilbert(3)); err != nil {
-		log.Fatalf("Failed to draw image: %s", err.Error())
-	}
 }
