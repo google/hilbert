@@ -59,6 +59,9 @@ type spaceFillingImage struct {
 	GridColor       color.Color
 	TextColor       color.Color
 	SnakeColor      color.Color
+
+	GridWidth float64
+	SnakeWidth float64
 }
 
 func (h *spaceFillingImage) toPixel(x, y int) (px, py float64) {
@@ -73,7 +76,7 @@ func (h *spaceFillingImage) createImage() (draw.Image, error) {
 func (h *spaceFillingImage) drawRectange(gc draw2d.GraphicContext, px1, py1, px2, py2 float64) {
 	gc.SetFillColor(h.BackgroundColor)
 	gc.SetStrokeColor(h.GridColor)
-	gc.SetLineWidth(1)
+	gc.SetLineWidth(h.GridWidth)
 
 	draw2dkit.Rectangle(gc, px1, py1, px2, py2)
 	gc.FillStroke()
@@ -93,14 +96,17 @@ func (h *spaceFillingImage) drawText(gc draw2d.GraphicContext, px1, py1 float64,
 
 func (h *spaceFillingImage) drawSnake(gc draw2d.GraphicContext, snake *draw2d.Path) {
 	gc.SetStrokeColor(h.SnakeColor)
+	gc.SetLineWidth(h.SnakeWidth)
+
+	// Note line caps and joins don't work https://github.com/llgcode/draw2d/issues/27
 	gc.SetLineCap(draw2d.SquareCap)
 	gc.SetLineJoin(draw2d.MiterJoin)
-	gc.SetLineWidth(2)
 
 	gc.Stroke(snake)
 }
 
 // createSpaceFillingImage returns a new SpaceFillingImage ready for drawing.
+// sqWidth and sqHeight are the dimensions of each individual square in the resulting image.
 func createSpaceFillingImage(algo hilbert.SpaceFilling, sqWidth, sqHeight float64) *spaceFillingImage {
 	return &spaceFillingImage{
 		Algo: algo,
@@ -115,8 +121,12 @@ func createSpaceFillingImage(algo hilbert.SpaceFilling, sqWidth, sqHeight float6
 		GridColor:       color.White,
 		TextColor:       color.RGBA{0x33, 0x33, 0x33, 0xff},
 		SnakeColor:      color.RGBA{0x33, 0x33, 0x33, 0xff},
+
+		GridWidth: 1.0,
+		SnakeWidth: 2.0,
 	}
 }
+
 
 // Draw uses the parameters in the hilbertImage and returns a Image
 func (h *spaceFillingImage) Draw() (draw.Image, error) {
@@ -262,6 +272,24 @@ func mainDrawAnimation(filename string, newAlgo func(n int) hilbert.SpaceFilling
 	return gif.EncodeAll(f, &g)
 }
 
+func mainDrawLogo() error {
+	h, err := hilbert.NewHilbert(8)
+	if err != nil {
+		return err
+	}
+
+	i := createSpaceFillingImage(h, 64, 64)
+	i.DrawText = false
+	i.GridColor = i.BackgroundColor
+	i.SnakeWidth = 15
+
+	img, err := i.Draw()
+	if err != nil {
+		return err
+	}
+	return draw2dimg.SaveToPngFile("logo.png", img)
+}
+
 func main() {
 
 	setupDraw2D()
@@ -282,6 +310,7 @@ func main() {
 		return s
 	}
 
+
 	if err := mainDrawOne("hilbert.png", newHilbert(3)); err != nil {
 		log.Fatalf("Failed to draw image: %s", err.Error())
 	}
@@ -296,5 +325,9 @@ func main() {
 
 	if err := mainDrawAnimation("peano_animation.gif", newPeano, 1, 6); err != nil {
 		log.Fatalf("Failed to draw animation: %s", err.Error())
+	}
+
+	if err := mainDrawLogo(); err != nil {
+		log.Fatalf("Failed to draw image: %s", err.Error())
 	}
 }
