@@ -216,7 +216,7 @@ func mainDrawLogo(filename string, curve hilbert.SpaceFilling) error {
 	h := createSpaceFillingImage(curve, math.Pow(2, scale), math.Pow(2, scale))
 	h.DrawText = false
 	h.DrawGrid = false
-	h.SnakeWidth = math.Pow(2, scale - 2)
+	h.SnakeWidth = math.Pow(2, scale-2)
 	h.BackgroundColor = color.Transparent
 
 	img, err := h.Draw()
