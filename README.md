@@ -1,4 +1,5 @@
-# Hilbert [![Build Status](https://img.shields.io/travis/google/hilbert.svg)](https://travis-ci.org/google/hilbert) [![Coverage](https://img.shields.io/coveralls/google/hilbert.svg)](https://coveralls.io/github/google/hilbert) [![Report card](https://goreportcard.com/badge/github.com/google/hilbert)](https://goreportcard.com/report/github.com/google/hilbert) [![GoDoc](https://godoc.org/github.com/google/hilbert?status.svg)](https://godoc.org/github.com/google/hilbert)
+# Hilbert [![Build Status](https://img.shields.io/travis/google/hilbert.svg)](https://travis-ci.org/google/hilbert) [![Coverage](https://img.shields.io/coveralls/google/hilbert.svg)](https://coveralls.io/github/google/hilbert) [![Report card](https://goreportcard.com/badge/github.com/google/hilbert)](https://goreportcard.com/report/github.com/google/hilbert) [![GoDoc](https://godoc.org/github.com/google/hilbert?status.svg)](https://godoc.org/github.com/google/hilbert) [![Libraries.io](https://img.shields.io/librariesio/github/google/hilbert.svg)](https://libraries.io/github/google/hilbert)
+
 
 Go package for mapping values to and from space-filling curves, such as
 [Hilbert](https://en.wikipedia.org/wiki/Hilbert_curve) and [Peano](https://en.wikipedia.org/wiki/Peano_curve) curves.
